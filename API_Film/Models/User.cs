@@ -7,7 +7,7 @@
         public string Password { get; set; }
         public string Role { get; set; }
 
-        // Navigation Properties
+        // Navigation Properties không cần thiết khi đăng nhập
         public ICollection<Order> Orders { get; set; }
         public ICollection<MovieReview> MovieReviews { get; set; }
     }
