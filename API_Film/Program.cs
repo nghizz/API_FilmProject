@@ -16,12 +16,24 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Thêm dịch vụ vào container
 builder.Services.AddControllers();
 
+// Cấu hình CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")  // Thêm domain của bạn tại đây
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Cấu hình kết nối MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<FilmDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
            .EnableDetailedErrors()
-           .LogTo(Console.WriteLine, LogLevel.Information));
+           .LogTo(Console.WriteLine, LogLevel.Information)
+           .EnableSensitiveDataLogging());  // Nếu cần thiết, bật logging dữ liệu nhạy cảm cho debugging
 
 // Cấu hình Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -40,12 +52,16 @@ var app = builder.Build();
 // Cấu hình Logger
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-// Kiểm tra kết nối MySQL (tuỳ chọn)
+// Kiểm tra kết nối MySQL
 try
 {
     using var connection = new MySqlConnection(connectionString);
     connection.Open();
     logger.LogInformation("Connection successful!");
+}
+catch (MySqlException ex)
+{
+    logger.LogError($"MySQL Connection Error: {ex.Message}");
 }
 catch (Exception ex)
 {
@@ -60,6 +76,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAll");  // Sử dụng CORS
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
