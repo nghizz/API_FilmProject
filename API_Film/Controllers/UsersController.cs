@@ -74,17 +74,34 @@ namespace API_Film.Controllers
                 return BadRequest(new { message = "Vui lòng nhập đầy đủ username và password." });
             }
 
-            var user = _context.Users
-                               .FirstOrDefault(u => u.Username == loginRequest.Username && u.Password == loginRequest.Password);
+            // Tìm tài khoản theo username
+            var user = _context.Users.FirstOrDefault(u => u.Username == loginRequest.Username);
 
             if (user == null)
             {
-                return Unauthorized(new { message = "Tài khoản hoặc mật khẩu không đúng." });
+                // Không tìm thấy tài khoản
+                return Unauthorized(new { message = "Tài khoản không tồn tại." });
             }
 
-            return Ok(new { message = "Đăng nhập thành công", user = new { user.Id, user.Username, user.Role } });
+            // Kiểm tra mật khẩu
+            if (user.Password != loginRequest.Password)
+            {
+                // Sai mật khẩu
+                return Unauthorized(new { message = "Mật khẩu không chính xác." });
+            }
+
+            // Đăng nhập thành công
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
+            HttpContext.Session.SetString("Username", user.Username);
+
+            return Ok(new
+            {
+                message = "Đăng nhập thành công",
+                user = new { user.Id, user.Username, user.Role }
+            });
         }
+    }
 
 
     }
-}
+

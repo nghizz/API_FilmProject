@@ -16,12 +16,21 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Thêm dịch vụ vào container
 builder.Services.AddControllers();
 
+// Thêm dịch vụ Session
+builder.Services.AddDistributedMemoryCache(); // Lưu Session trong bộ nhớ
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Thời gian sống của Session
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 // Cấu hình CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")  // Thêm domain của bạn tại đây
+        policy.WithOrigins("http://localhost:4200") // Domain Angular Frontend
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -33,7 +42,7 @@ builder.Services.AddDbContext<FilmDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
            .EnableDetailedErrors()
            .LogTo(Console.WriteLine, LogLevel.Information)
-           .EnableSensitiveDataLogging());  // Nếu cần thiết, bật logging dữ liệu nhạy cảm cho debugging
+           .EnableSensitiveDataLogging());  // Bật logging dữ liệu nhạy cảm nếu cần
 
 // Cấu hình Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -57,27 +66,33 @@ try
 {
     using var connection = new MySqlConnection(connectionString);
     connection.Open();
-    logger.LogInformation("Connection successful!");
+    logger.LogInformation("Kết nối MySQL thành công!");
 }
 catch (MySqlException ex)
 {
-    logger.LogError($"MySQL Connection Error: {ex.Message}");
+    logger.LogError($"Lỗi kết nối MySQL: {ex.Message}");
 }
 catch (Exception ex)
 {
-    logger.LogError($"Error connecting to MySQL: {ex.Message}");
+    logger.LogError($"Lỗi khi kết nối MySQL: {ex.Message}");
 }
 
 // Cấu hình HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();  // Hiển thị lỗi chi tiết trong môi trường phát triển
+    app.UseDeveloperExceptionPage(); // Hiển thị lỗi chi tiết trong môi trường phát triển
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");  // Sử dụng CORS
+app.UseCors("AllowAll"); // Sử dụng cấu hình CORS
 app.UseHttpsRedirection();
+
+// Sử dụng Session Middleware
+app.UseSession();
+
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
