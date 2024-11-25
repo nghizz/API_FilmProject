@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using API_Film.Models;
 using API_Film.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_Film.Controllers
 {
@@ -14,6 +15,14 @@ namespace API_Film.Controllers
         public SeatsController(FilmDbContext context)
         {
             _context = context;
+        }
+
+        // GET: api/Seats
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Seat>>> GetSeats()
+        {
+            var seats = await _context.Seats.ToListAsync();
+            return Ok(seats);
         }
 
         [HttpGet]
