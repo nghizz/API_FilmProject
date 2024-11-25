@@ -17,14 +17,6 @@ namespace API_Film.Controllers
             _context = context;
         }
 
-        // GET: api/Seats
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Seat>>> GetSeats()
-        {
-            var seats = await _context.Seats.ToListAsync();
-            return Ok(seats);
-        }
-
         [HttpGet]
         public IActionResult GetAllSeats()
         {
