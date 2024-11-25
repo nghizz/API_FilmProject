@@ -5,14 +5,14 @@ public class SeatType
 {
     public long Id { get; set; }
 
-    [Column("type_name")]
+    [Column("name")]
     public string TypeName { get; set; } // Ví dụ: VIP, Standard, Economy
 
     [Column("description")]
     public string Description { get; set; }
 
-    [Column("price_multiplier")]
-    public double PriceMultiplier { get; set; } // Hệ số giá (VD: 1.5x cho VIP)
+    [Column("price")]
+    public double Price { get; set; }
 
     // Navigation Properties
     public ICollection<Seat> Seats { get; set; }
