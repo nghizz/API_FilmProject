@@ -9,17 +9,16 @@ namespace API_Film.Models
         public string Location { get; set; }
         public string Description { get; set; }
 
-        [Column("image_url")]  // Thêm attribute này
+        [Column("image_url")] // Thêm attribute này
         public string ImageUrl { get; set; }
 
-        [Column("support_info")]  // Thêm attribute này
+        [Column("support_info")] // Thêm attribute này
         public string SupportInfo { get; set; }
 
-        [Column("user_rating")]  // Thêm attribute này
+        [Column("user_rating")] // Thêm attribute này
         public double UserRating { get; set; }
 
         // Navigation Properties
-        public ICollection<TicketType> TicketTypes { get; set; }
         public ICollection<Promotion> Promotions { get; set; }
         public ICollection<Seat> Seats { get; set; }
         public ICollection<Showtime> Showtimes { get; set; }
