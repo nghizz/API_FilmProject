@@ -1,5 +1,4 @@
-﻿// SeatsController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using API_Film.Models;
 using API_Film.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,45 +16,47 @@ namespace API_Film.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult GetAllSeats()
+        // GET: api/Seats/available
+        [HttpGet("available")]
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetAvailableSeats()
         {
-            return Ok(_context.Seats.ToList());
+            var availableSeats = await _context.Seats
+                .Where(s => s.IsAvailable)
+                .Include(s => s.SeatType)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.RowNumber,
+                    s.SeatNumber,
+                    s.IsAvailable,
+                    SeatType = s.SeatType.TypeName,
+                    Price = s.SeatType.Price // Thêm giá ghế
+                })
+                .ToListAsync();
+            return Ok(availableSeats);
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetSeatById(long id)
+        // GET: api/Seats/types
+        [HttpGet("types")]
+        public async Task<ActionResult<IEnumerable<SeatType>>> GetSeatTypes()
         {
-            var seat = _context.Seats.Find(id);
-            if (seat == null) return NotFound();
-            return Ok(seat);
+            var seatTypes = await _context.SeatTypes.ToListAsync();
+            return Ok(seatTypes);
         }
 
-        [HttpPost]
-        public IActionResult CreateSeat(Seat seat)
+        // POST: api/Seats/reserve
+        [HttpPost("reserve")]
+        public async Task<IActionResult> ReserveSeats([FromBody] List<long> seatIds)
         {
-            _context.Seats.Add(seat);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetSeatById), new { id = seat.Id }, seat);
-        }
+            var seats = await _context.Seats.Where(s => seatIds.Contains(s.Id)).ToListAsync();
+            if (!seats.Any()) return NotFound("Không tìm thấy ghế.");
 
-        [HttpPut("{id}")]
-        public IActionResult UpdateSeat(long id, Seat seat)
-        {
-            if (id != seat.Id) return BadRequest();
-            _context.Entry(seat).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            _context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteSeat(long id)
-        {
-            var seat = _context.Seats.Find(id);
-            if (seat == null) return NotFound();
-            _context.Seats.Remove(seat);
-            _context.SaveChanges();
-            return NoContent();
+            foreach (var seat in seats)
+            {
+                seat.IsAvailable = false;
+            }
+            await _context.SaveChangesAsync();
+            return Ok("Ghế đã được cập nhật trạng thái.");
         }
     }
 }

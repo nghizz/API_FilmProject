@@ -66,15 +66,15 @@ try
 {
     using var connection = new MySqlConnection(connectionString);
     connection.Open();
-    logger.LogInformation("Kết nối MySQL thành công!");
+    logger.LogInformation("Connect suscess!");
 }
 catch (MySqlException ex)
 {
-    logger.LogError($"Lỗi kết nối MySQL: {ex.Message}");
+    logger.LogError($"Fail connect MySQL: {ex.Message}");
 }
 catch (Exception ex)
 {
-    logger.LogError($"Lỗi khi kết nối MySQL: {ex.Message}");
+    logger.LogError($"Fail connect MySQL: {ex.Message}");
 }
 
 // Cấu hình HTTP request pipeline

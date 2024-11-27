@@ -7,7 +7,7 @@ namespace API_Film.Data
     {
         public DbSet<Cinema> Cinemas { get; set; }
         public DbSet<Movie> Movies { get; set; }
-        public DbSet<TicketType> TicketTypes { get; set; }
+        public DbSet<SeatType> SeatTypes { get; set; } // Thêm DbSet<SeatType>
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Seat> Seats { get; set; }
@@ -26,7 +26,7 @@ namespace API_Film.Data
             // Cấu hình tên bảng
             modelBuilder.Entity<Cinema>().ToTable("cinemas");
             modelBuilder.Entity<Movie>().ToTable("movies");
-            modelBuilder.Entity<TicketType>().ToTable("ticket_types");
+            modelBuilder.Entity<SeatType>().ToTable("seat_types"); // Đặt tên bảng cho SeatType
             modelBuilder.Entity<Showtime>().ToTable("showtimes");
             modelBuilder.Entity<Seat>().ToTable("seats");
             modelBuilder.Entity<SeatShowtime>().ToTable("seat_showtime");
@@ -35,15 +35,9 @@ namespace API_Film.Data
             modelBuilder.Entity<Promotion>().ToTable("promotions");
             modelBuilder.Entity<Refund>().ToTable("refunds");
 
-
             base.OnModelCreating(modelBuilder);
 
             // Cấu hình các quan hệ giữa các bảng
-            modelBuilder.Entity<TicketType>()
-                .HasOne(t => t.Cinema)
-                .WithMany(c => c.TicketTypes)
-                .HasForeignKey(t => t.CinemaId);
-
             modelBuilder.Entity<Promotion>()
                 .HasOne(p => p.Cinema)
                 .WithMany(c => c.Promotions)
@@ -53,6 +47,11 @@ namespace API_Film.Data
                 .HasOne(s => s.Cinema)
                 .WithMany(c => c.Seats)
                 .HasForeignKey(s => s.CinemaId);
+
+            modelBuilder.Entity<Seat>()
+                .HasOne(s => s.SeatType) // Thêm quan hệ Seat với SeatType
+                .WithMany(st => st.Seats)
+                .HasForeignKey(s => s.SeatTypeId);
 
             modelBuilder.Entity<Showtime>()
                 .HasOne(s => s.Movie)
