@@ -21,7 +21,6 @@ namespace API_Film.Controllers
         public async Task<ActionResult<IEnumerable<dynamic>>> GetAvailableSeats()
         {
             var availableSeats = await _context.Seats
-                .Where(s => s.IsAvailable)
                 .Include(s => s.SeatType)
                 .Select(s => new
                 {
@@ -30,10 +29,12 @@ namespace API_Film.Controllers
                     s.SeatNumber,
                     s.IsAvailable,
                     SeatType = s.SeatType.TypeName,
-                    Price = s.SeatType.Price // Thêm giá ghế
+                    Price = s.SeatType.Price
                 })
+                .Where(s => s.IsAvailable)
                 .ToListAsync();
-            return Ok(availableSeats);
+
+            return Ok(availableSeats); // Trả về mảng trực tiếp, không bọc trong $values
         }
 
         // GET: api/Seats/types
@@ -53,8 +54,9 @@ namespace API_Film.Controllers
 
             foreach (var seat in seats)
             {
-                seat.IsAvailable = false;
+                seat.IsAvailable = false; // Set seat as reserved
             }
+
             await _context.SaveChangesAsync();
             return Ok("Ghế đã được cập nhật trạng thái.");
         }
