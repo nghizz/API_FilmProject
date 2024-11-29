@@ -8,7 +8,7 @@ public class Seat
     [Column("cinema_id")]
     public long CinemaId { get; set; }
 
-    [Column("row_number")]
+    [Column("row_numbers")]
     public int RowNumber { get; set; }
 
     [Column("seat_number")]

@@ -93,6 +93,7 @@ namespace API_Film.Controllers
             // Đăng nhập thành công
             HttpContext.Session.SetString("UserId", user.Id.ToString());
             HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("Role", user.Role);
 
             return Ok(new
             {
