@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using API_Film.Models;
 using API_Film.Data;
+using API_Film.DTOs;
 
 namespace API_Film.Controllers
 {
@@ -19,8 +20,22 @@ namespace API_Film.Controllers
         [HttpGet]
         public IActionResult GetAllMovies()
         {
-            return Ok(_context.Movies.ToList());
+            var movies = _context.Movies
+                .Select(m => new MovieDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Genre = m.Genre,
+                    Duration = m.Duration,
+                    Description = m.Description,
+                    Director = m.Director,
+                    ImageUrl = m.ImageUrl,
+                })
+                .ToList();
+
+            return Ok(movies);
         }
+
 
         [HttpGet("{id}")]
         public IActionResult GetMovieById(long id)
@@ -55,6 +70,21 @@ namespace API_Film.Controllers
             _context.Movies.Remove(movie);
             _context.SaveChanges();
             return NoContent();
+        }
+
+        [HttpGet("search")]
+        public IActionResult SearchMovies([FromQuery] string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return BadRequest("Keyword không được để trống.");
+            }
+
+            var movies = _context.Movies
+                .Where(m => m.Name.Contains(keyword) || m.Description.Contains(keyword))
+                .ToList();
+
+            return Ok(movies);
         }
     }
 }

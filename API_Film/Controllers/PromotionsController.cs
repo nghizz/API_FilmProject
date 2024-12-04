@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using API_Film.Models;
 using API_Film.Data;
+using API_Film.DTOs;
 
 namespace API_Film.Controllers
 {
@@ -19,8 +20,24 @@ namespace API_Film.Controllers
         [HttpGet]
         public IActionResult GetAllPromotions()
         {
-            return Ok(_context.Promotions.ToList());
+            var promotions = _context.Promotions
+                .Select(p => new PromotionDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Discount = p.Discount,
+                    ImageUrl = p.ImageUrl,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    MinimumAmount = p.MinimumAmount,
+
+                })
+                .ToList();
+
+            return Ok(promotions);
         }
+
 
         [HttpGet("{id}")]
         public IActionResult GetPromotionById(long id)

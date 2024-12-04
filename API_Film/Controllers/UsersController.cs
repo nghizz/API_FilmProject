@@ -101,8 +101,36 @@ namespace API_Film.Controllers
                 user = new { user.Id, user.Username, user.Role }
             });
         }
-    }
 
+        [HttpGet("history/{userId}")]
+        public async Task<IActionResult> GetPromotionHistory(long userId)
+        {
+            var history = await _context.Orders
+                .Where(o => o.UserId == userId && o.PromotionId != null)
+                .Join(
+                    _context.Promotions,
+                    order => order.PromotionId,
+                    promotion => promotion.Id,
+                    (order, promotion) => new
+                    {
+                        OrderId = order.Id,
+                        PromotionName = promotion.Name,
+                        PromotionDescription = promotion.Description,
+                        DiscountPercentage = promotion.Discount,
+                        UsedDate = order.OrderDate,
+                        StartDate = promotion.StartDate,
+                        EndDate = promotion.EndDate
+                    }
+                )
+                .ToListAsync();
 
+            if (history.Count == 0)
+            {
+                return NotFound(new { Message = "Người dùng chưa sử dụng khuyến mãi nào." });
+            }
+
+            return Ok(history);
+        }
     }
+}
 
