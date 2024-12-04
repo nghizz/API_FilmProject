@@ -6,6 +6,9 @@ public class Promotion
     public long Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
+
+    [Column("image_url")]
+    public string ImageUrl { get; set; }
     public double Discount { get; set; }
     [Column("start_date")]
     public DateTime StartDate { get; set; }
