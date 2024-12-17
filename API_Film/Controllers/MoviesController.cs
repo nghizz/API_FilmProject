@@ -38,12 +38,31 @@ namespace API_Film.Controllers
 
 
         [HttpGet("{id}")]
-        public IActionResult GetMovieById(long id)
+        public IActionResult GetMovieById(int id)
         {
-            var movie = _context.Movies.Find(id);
-            if (movie == null) return NotFound();
+            var movie = _context.Movies
+                .Where(m => m.Id == id)
+                .Select(m => new MovieDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Genre = m.Genre,
+                    Duration = m.Duration,
+                    Description = m.Description,
+                    Director = m.Director,
+                    ImageUrl = m.ImageUrl,
+                    Showtimes = m.Showtimes.Select(s => s.StartTime).ToList() // Trả về danh sách giờ chiếu
+                })
+                .FirstOrDefault();
+
+            if (movie == null)
+            {
+                return NotFound();
+            }
+
             return Ok(movie);
         }
+
 
         [HttpPost]
         public IActionResult CreateMovie(Movie movie)
