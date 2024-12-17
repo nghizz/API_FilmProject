@@ -1,6 +1,6 @@
-﻿namespace API_Film.Models
+﻿namespace API_Film.DTOs
 {
-    public class LoginRequest
+    public class RegisterRequest
     {
         public string Username { get; set; }
         public string Password { get; set; }
