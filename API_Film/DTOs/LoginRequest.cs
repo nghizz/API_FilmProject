@@ -1,4 +1,4 @@
-﻿namespace API_Film.Models
+﻿namespace API_Film.DTOs
 {
     public class LoginRequest
     {

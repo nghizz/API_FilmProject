@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.Data;
 using LoginRequestIdentity = Microsoft.AspNetCore.Identity.Data.LoginRequest;
-using LoginRequestAPI = API_Film.Models.LoginRequest;
+using LoginRequestAPI = API_Film.DTOs.LoginRequest;
+using RegisterRequest = API_Film.DTOs.RegisterRequest;
 
 namespace API_Film.Controllers
 {
@@ -100,6 +101,37 @@ namespace API_Film.Controllers
                 message = "Đăng nhập thành công",
                 user = new { user.Id, user.Username, user.Role }
             });
+        }
+
+        //API Register
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] RegisterRequest registerRequest)
+        {
+            if (string.IsNullOrEmpty(registerRequest.Username) || string.IsNullOrEmpty(registerRequest.Password))
+            {
+                return BadRequest(new { message = "Vui lòng nhập đầy đủ username và password." });
+            }
+
+            // Kiểm tra xem username đã tồn tại trong cơ sở dữ liệu chưa
+            var existingUser = _context.Users.FirstOrDefault(u => u.Username == registerRequest.Username);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "Tài khoản đã tồn tại. Vui lòng chọn username khác." });
+            }
+
+            // Tạo một đối tượng người dùng mới
+            var newUser = new User
+            {
+                Username = registerRequest.Username,
+                Password = registerRequest.Password, 
+                Role = "user" // Vai trò cố định là user
+            };
+
+            // Thêm người dùng mới vào cơ sở dữ liệu
+            _context.Users.Add(newUser);
+            _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu
+
+            return Ok(new { message = "Đăng ký thành công!" });
         }
 
         [HttpGet("history/{userId}")]
