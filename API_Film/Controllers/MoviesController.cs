@@ -71,6 +71,7 @@ namespace API_Film.Controllers
             return Ok(result);
         }
 
+
         [HttpPost]
         public IActionResult CreateMovie(Movie movie)
         {

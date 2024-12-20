@@ -10,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-    options.JsonSerializerOptions.MaxDepth = 64; // Tăng chiều sâu nếu cần thiết
 });
 
 // Thêm dịch vụ vào container
@@ -32,7 +31,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:4200") // Domain Angular Frontend
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // Cho phép credentials nếu cần
     });
 });
 
@@ -42,7 +42,7 @@ builder.Services.AddDbContext<FilmDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
            .EnableDetailedErrors()
            .LogTo(Console.WriteLine, LogLevel.Information)
-           .EnableSensitiveDataLogging());  // Bật logging dữ liệu nhạy cảm nếu cần
+           .EnableSensitiveDataLogging());
 
 // Cấu hình Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -66,15 +66,15 @@ try
 {
     using var connection = new MySqlConnection(connectionString);
     connection.Open();
-    logger.LogInformation("Connect suscess!");
+    logger.LogInformation("Connect Success!");
 }
 catch (MySqlException ex)
 {
-    logger.LogError($"Fail connect MySQL: {ex.Message}");
+    logger.LogError($"Errol connect to MySQL: {ex.Message}");
 }
 catch (Exception ex)
 {
-    logger.LogError($"Fail connect MySQL: {ex.Message}");
+    logger.LogError($"Errol connect to MySQL: {ex.Message}");
 }
 
 // Cấu hình HTTP request pipeline
@@ -87,10 +87,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll"); // Sử dụng cấu hình CORS
 app.UseHttpsRedirection();
-
-// Sử dụng Session Middleware
-app.UseSession();
-
+app.UseSession(); // Sử dụng Session Middleware
 app.UseAuthorization();
 
 app.MapControllers();

@@ -9,6 +9,7 @@
             public string Description { get; set; }
             public string Director { get; set; }
             public string ImageUrl { get; set; }
+            public List<DateTime> Showtimes { get; set; }
     }
 }
 
