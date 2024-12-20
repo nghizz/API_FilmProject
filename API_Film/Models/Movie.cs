@@ -16,4 +16,5 @@ public class Movie
 
     public ICollection<Showtime> Showtimes { get; set; }
     public ICollection<MovieReview> MovieReviews { get; set; }
+    public List<SeatShowtime> SeatShowtimes { get; set; }
 }

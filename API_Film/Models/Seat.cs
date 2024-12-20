@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class Seat
 {
+    [Column("id")]
     public long Id { get; set; }
-
-    [Column("cinema_id")]
-    public long CinemaId { get; set; }
 
     [Column("row_number")]
     public int RowNumber { get; set; }
@@ -21,7 +19,6 @@ public class Seat
     public long SeatTypeId { get; set; } // Thêm thuộc tính cho SeatType
 
     // Navigation Properties
-    public Cinema Cinema { get; set; }
     public SeatType SeatType { get; set; } // Thêm Navigation Property
     public ICollection<SeatShowtime> SeatShowtimes { get; set; }
 }

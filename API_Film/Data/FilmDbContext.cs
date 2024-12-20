@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using API_Film.Models;
+﻿using API_Film.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_Film.Data
 {
     public class FilmDbContext : DbContext
     {
-        public DbSet<Cinema> Cinemas { get; set; }
+        public DbSet<OrderSeat> OrderSeats { get; set; }
         public DbSet<Movie> Movies { get; set; }
-        public DbSet<SeatType> SeatTypes { get; set; } // Thêm DbSet<SeatType>
+        public DbSet<SeatType> SeatTypes { get; set; }
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Seat> Seats { get; set; }
@@ -23,10 +23,10 @@ namespace API_Film.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Cấu hình tên bảng
-            modelBuilder.Entity<Cinema>().ToTable("cinemas");
+            // Cấu hình tên bảng (optional if your class names match table names)
+            modelBuilder.Entity<OrderSeat>().ToTable("order_seat");
             modelBuilder.Entity<Movie>().ToTable("movies");
-            modelBuilder.Entity<SeatType>().ToTable("seat_types"); // Đặt tên bảng cho SeatType
+            modelBuilder.Entity<SeatType>().ToTable("seat_types");
             modelBuilder.Entity<Showtime>().ToTable("showtimes");
             modelBuilder.Entity<Seat>().ToTable("seats");
             modelBuilder.Entity<SeatShowtime>().ToTable("seat_showtime");
@@ -37,19 +37,12 @@ namespace API_Film.Data
 
             base.OnModelCreating(modelBuilder);
 
-            // Cấu hình các quan hệ giữa các bảng
-            modelBuilder.Entity<Promotion>()
-                .HasOne(p => p.Cinema)
-                .WithMany(c => c.Promotions)
-                .HasForeignKey(p => p.CinemaId);
+            // Configure relationships
+            modelBuilder.Entity<OrderSeat>()
+                .HasKey(os => new { os.OrderId, os.SeatId });
 
             modelBuilder.Entity<Seat>()
-                .HasOne(s => s.Cinema)
-                .WithMany(c => c.Seats)
-                .HasForeignKey(s => s.CinemaId);
-
-            modelBuilder.Entity<Seat>()
-                .HasOne(s => s.SeatType) // Thêm quan hệ Seat với SeatType
+                .HasOne(s => s.SeatType)
                 .WithMany(st => st.Seats)
                 .HasForeignKey(s => s.SeatTypeId);
 
@@ -58,51 +51,26 @@ namespace API_Film.Data
                 .WithMany(m => m.Showtimes)
                 .HasForeignKey(s => s.MovieId);
 
-            modelBuilder.Entity<Showtime>()
-                .HasOne(s => s.Cinema)
-                .WithMany(c => c.Showtimes)
-                .HasForeignKey(s => s.CinemaId);
-
             modelBuilder.Entity<SeatShowtime>()
-                .HasKey(ss => new { ss.ShowtimeId, ss.SeatId });
+                .HasKey(ss => new { ss.ShowtimeId, ss.SeatId, ss.MovieId });
+
             modelBuilder.Entity<SeatShowtime>()
                 .HasOne(ss => ss.Showtime)
                 .WithMany(s => s.SeatShowtimes)
                 .HasForeignKey(ss => ss.ShowtimeId);
+
             modelBuilder.Entity<SeatShowtime>()
                 .HasOne(ss => ss.Seat)
                 .WithMany(s => s.SeatShowtimes)
                 .HasForeignKey(ss => ss.SeatId);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.User)
-                .WithMany(u => u.Orders)
-                .HasForeignKey(o => o.UserId);
+            // This is the crucial relationship to fix the error
+            modelBuilder.Entity<SeatShowtime>()
+                .HasOne(ss => ss.Movie)
+                .WithMany(m => m.SeatShowtimes)
+                .HasForeignKey(ss => ss.MovieId);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.Cinema)
-                .WithMany(c => c.Orders)
-                .HasForeignKey(o => o.CinemaId);
-
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.Promotion)
-                .WithMany(p => p.Orders)
-                .HasForeignKey(o => o.PromotionId);
-
-            modelBuilder.Entity<MovieReview>()
-                .HasOne(mr => mr.User)
-                .WithMany(u => u.MovieReviews)
-                .HasForeignKey(mr => mr.UserId);
-
-            modelBuilder.Entity<MovieReview>()
-                .HasOne(mr => mr.Movie)
-                .WithMany(m => m.MovieReviews)
-                .HasForeignKey(mr => mr.MovieId);
-
-            modelBuilder.Entity<Refund>()
-                .HasOne(r => r.Order)
-                .WithMany(o => o.Refunds)
-                .HasForeignKey(r => r.OrderId);
+            // ... your other relationship configurations ...
         }
     }
 }
