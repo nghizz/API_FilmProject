@@ -16,9 +16,5 @@ public class Promotion
     public DateTime EndDate { get; set; }
     [Column("minimum_amount")]
     public double MinimumAmount { get; set; }
-    [Column("cinema_id")]
-    public long CinemaId { get; set; }
-
-    public Cinema Cinema { get; set; }
     public ICollection<Order> Orders { get; set; }
 }
