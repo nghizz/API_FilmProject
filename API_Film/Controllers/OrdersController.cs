@@ -70,13 +70,6 @@ namespace API_Film.Controllers
         [HttpPost]
         public IActionResult CreateOrder([FromBody] PayMentDTO paymentDto)
         {
-            // Kiểm tra mã khuyến mãi
-            /*var promotion = _context.Promotions.Find(paymentDto.PromotionId);
-            if (promotion == null)
-            {
-                return BadRequest(new { Message = "Mã khuyến mãi không tồn tại!" });
-            }*/
-
             // Tạo đơn hàng
             var order = new Order
             {
@@ -98,22 +91,43 @@ namespace API_Film.Controllers
 
             foreach (var seatId in seatIds)
             {
-                var seatShowtime = new SeatShowtime
+                var seatShowtime = _context.SeatShowtimes
+                    .FirstOrDefault(ss => ss.ShowtimeId == paymentDto.ShowtimeId &&
+                                         ss.SeatId == seatId &&
+                                         ss.MovieId == paymentDto.MovieId);
+
+                if (seatShowtime == null)
                 {
-                    ShowtimeId = paymentDto.ShowtimeId,
-                    SeatId = seatId,
-                    MovieId = paymentDto.MovieId
-                };
-                _context.SeatShowtimes.Add(seatShowtime);
+                    // Nếu bản ghi seat_showtime chưa tồn tại, tạo mới
+                    seatShowtime = new SeatShowtime
+                    {
+                        ShowtimeId = paymentDto.ShowtimeId,
+                        SeatId = seatId,
+                        MovieId = paymentDto.MovieId,
+                        IsAvailable = false // Đặt IsAvailable là false vì ghế đang được đặt
+                    };
+                    _context.SeatShowtimes.Add(seatShowtime);
+                }
+                else
+                {
+                    // Nếu bản ghi seat_showtime đã tồn tại, cập nhật IsAvailable
+                    seatShowtime.IsAvailable = false;
+                    _context.SeatShowtimes.Update(seatShowtime);
+                }
 
                 var orderSeat = new OrderSeat
                 {
                     OrderId = order.Id,
                     SeatId = seatId
                 };
+
+                // Thêm dòng này để đảm bảo OrderSeat được liên kết với SeatShowtime
+                orderSeat.SeatShowtime = seatShowtime;
+
                 _context.OrderSeats.Add(orderSeat);
             }
-            _context.SaveChanges();
+
+            _context.SaveChanges(); // Lưu thay đổi vào database
 
             return Ok(new { Message = "Đơn hàng đã được tạo thành công!" });
         }

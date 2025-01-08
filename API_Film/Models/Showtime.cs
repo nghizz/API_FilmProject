@@ -9,6 +9,9 @@ public class Showtime
     [Column("start_time")]
     public DateTime StartTime { get; set; }
 
+    [Column("end_time")]
+    public DateTime EndTime { get; set; }
+
     public Movie Movie { get; set; }
     public ICollection<SeatShowtime> SeatShowtimes { get; set; }
 }

@@ -52,7 +52,8 @@ namespace API_Film.Controllers
             var showtimeDTOs = movie.Showtimes.Select(s => new ShowtimeDTO
             {
                 Id = s.Id,
-                StartTime = s.StartTime
+                StartTime = s.StartTime,
+                EndTime = s.EndTime
             }).ToList();
 
             // Tạo một object mới để trả về, chỉ bao gồm thông tin cần thiết
