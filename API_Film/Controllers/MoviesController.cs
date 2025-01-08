@@ -22,6 +22,7 @@ namespace API_Film.Controllers
         public IActionResult GetAllMovies()
         {
             var movies = _context.Movies
+                .Include(m => m.Showtimes) // Include Showtimes
                 .Select(m => new MovieDto
                 {
                     Id = m.Id,
@@ -31,9 +32,9 @@ namespace API_Film.Controllers
                     Description = m.Description,
                     Director = m.Director,
                     ImageUrl = m.ImageUrl,
+                    Showtimes = m.Showtimes.Select(s => s.StartTime).ToList() // Add showtimes to DTO
                 })
                 .ToList();
-
             return Ok(movies);
         }
 

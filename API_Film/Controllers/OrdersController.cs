@@ -87,7 +87,8 @@ namespace API_Film.Controllers
                 PaymentMethod = paymentDto.PaymentMethod,
                 TransactionId = Guid.NewGuid().ToString(),
                 PromotionId = paymentDto.PromotionId,
-                MovieId = paymentDto.MovieId
+                MovieId = paymentDto.MovieId,
+                Quantity = 1
             };
 
             _context.Orders.Add(order);

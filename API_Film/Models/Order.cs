@@ -16,6 +16,9 @@ namespace API_Film.Models
         [Column("order_date")]
         public DateTime OrderDate { get; set; }
 
+        [Column("quantity")]
+        public int Quantity { get; set; } = 1;
+
         [Column("promotion_id")]
         public long PromotionId { get; set; }
         public string PaymentStatus { get; set; }
