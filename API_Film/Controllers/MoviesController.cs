@@ -22,29 +22,33 @@ namespace API_Film.Controllers
         public IActionResult GetAllMovies()
         {
             var movies = _context.Movies
-                .Include(m => m.Showtimes) // Include Showtimes
+                .Include(m => m.Showtimes)
                 .Select(m => new MovieDto
                 {
                     Id = m.Id,
                     Name = m.Name,
                     Genre = m.Genre,
                     Duration = m.Duration,
-                    Description = m.Description,
-                    Director = m.Director,
-                    ImageUrl = m.ImageUrl,
-                    Showtimes = m.Showtimes.Select(s => s.StartTime).ToList() // Add showtimes to DTO
+                    Description = m.Description ?? "", // Nếu Description null, gán chuỗi rỗng
+                    Director = m.Director ?? "", // Nếu Director null, gán chuỗi rỗng
+                    ImageUrl = m.ImageUrl ?? "", // Nếu ImageUrl null, gán chuỗi rỗng
+                    Showtimes = m.Showtimes.Select(s => new ShowtimeDTO
+                    {
+                        Id = s.Id,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime
+                    }).ToList() ?? new List<ShowtimeDTO>() // Ensure Showtimes is not null
                 })
                 .ToList();
             return Ok(movies);
         }
 
 
-        // Trong MoviesController.cs
         [HttpGet("{id}")]
         public IActionResult GetMovieById(long id)
         {
             var movie = _context.Movies.Include(m => m.Showtimes)
-                                  .FirstOrDefault(m => m.Id == id);
+                                      .FirstOrDefault(m => m.Id == id);
             if (movie == null)
                 return NotFound();
 
@@ -73,7 +77,6 @@ namespace API_Film.Controllers
             return Ok(result);
         }
 
-
         [HttpPost]
         public IActionResult CreateMovie(Movie movie)
         {
@@ -91,8 +94,8 @@ namespace API_Film.Controllers
 
             // Tìm phim trong cơ sở dữ liệu
             var existingMovie = _context.Movies
-                                        .Include(m => m.Showtimes) // Bao gồm cả danh sách showtimes
-                                        .FirstOrDefault(m => m.Id == id);
+                .Include(m => m.Showtimes) // Bao gồm cả danh sách showtimes
+                .FirstOrDefault(m => m.Id == id);
             if (existingMovie == null)
                 return NotFound("Không tìm thấy phim với ID được cung cấp.");
 
@@ -111,11 +114,12 @@ namespace API_Film.Controllers
                 existingMovie.Showtimes.Clear();
 
                 // Thêm các showtimes mới từ DTO
-                foreach (var showtime in movieDto.Showtimes)
+                foreach (var showtimeDto in movieDto.Showtimes)
                 {
                     existingMovie.Showtimes.Add(new Showtime
                     {
-                        StartTime = showtime,
+                        StartTime = showtimeDto.StartTime,  // Use StartTime from showtimeDto
+                        EndTime = showtimeDto.EndTime,      // Use EndTime from showtimeDto
                         MovieId = existingMovie.Id // Gán MovieId để đảm bảo liên kết đúng
                     });
                 }
@@ -136,8 +140,6 @@ namespace API_Film.Controllers
 
             return NoContent();
         }
-
-
 
         [HttpDelete("{id}")]
         public IActionResult DeleteMovie(long id)
