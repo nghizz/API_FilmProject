@@ -64,13 +64,6 @@ namespace API_Film.Data
                 .WithMany(s => s.SeatShowtimes)
                 .HasForeignKey(ss => ss.SeatId);
 
-            // This is the crucial relationship to fix the error
-            modelBuilder.Entity<SeatShowtime>()
-                .HasOne(ss => ss.Movie)
-                .WithMany(m => m.SeatShowtimes)
-                .HasForeignKey(ss => ss.MovieId);
-
-            // ... your other relationship configurations ...
         }
     }
 }

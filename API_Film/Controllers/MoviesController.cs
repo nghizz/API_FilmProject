@@ -78,10 +78,21 @@ namespace API_Film.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateMovie(Movie movie)
+        public IActionResult CreateMovie([FromBody] Movie movie)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Trả về lỗi nếu dữ liệu không hợp lệ
+            }
+
+            // Nếu Showtimes hoặc MovieReviews không được gửi, đảm bảo không null
+            movie.Showtimes ??= new List<Showtime>();
+            movie.MovieReviews ??= new List<MovieReview>();
+
+            // Thêm vào database
             _context.Movies.Add(movie);
             _context.SaveChanges();
+
             return CreatedAtAction(nameof(GetMovieById), new { id = movie.Id }, movie);
         }
 

@@ -15,6 +15,5 @@ public class Movie
     public string ImageUrl { get; set; }
 
     public ICollection<Showtime> Showtimes { get; set; }
-    public ICollection<MovieReview> MovieReviews { get; set; }
-    public List<SeatShowtime> SeatShowtimes { get; set; }
+    public ICollection<MovieReview> MovieReviews { get; set; } 
 }
