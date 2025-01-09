@@ -14,6 +14,7 @@ public class Movie
     [Column("image_url")]
     public string ImageUrl { get; set; }
 
-    public ICollection<Showtime> Showtimes { get; set; }
-    public ICollection<MovieReview> MovieReviews { get; set; } 
+    // Đảm bảo không null
+    public ICollection<Showtime> Showtimes { get; set; } = new List<Showtime>();
+    public ICollection<MovieReview> MovieReviews { get; set; }
 }

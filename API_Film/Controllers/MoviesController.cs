@@ -4,6 +4,7 @@ using API_Film.Models;
 using API_Film.Data;
 using API_Film.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace API_Film.Controllers
 {
@@ -97,52 +98,35 @@ namespace API_Film.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateMovie(long id, [FromBody] MovieDto movieDto)
+        public async Task<IActionResult> UpdateMovie(long id, [FromBody] JsonElement movieDtoJson)
         {
-            // Kiểm tra ID có khớp không
-            if (id != movieDto.Id)
-                return BadRequest("ID không khớp.");
-
-            // Tìm phim trong cơ sở dữ liệu
-            var existingMovie = _context.Movies
-                .Include(m => m.Showtimes) // Bao gồm cả danh sách showtimes
-                .FirstOrDefault(m => m.Id == id);
-            if (existingMovie == null)
-                return NotFound("Không tìm thấy phim với ID được cung cấp.");
-
-            // Cập nhật các trường dữ liệu
-            existingMovie.Name = movieDto.Name;
-            existingMovie.Genre = movieDto.Genre;
-            existingMovie.Duration = movieDto.Duration;
-            existingMovie.Description = movieDto.Description;
-            existingMovie.Director = movieDto.Director;
-            existingMovie.ImageUrl = movieDto.ImageUrl;
-
-            // Cập nhật Showtimes
-            if (movieDto.Showtimes != null)
+            if (!ModelState.IsValid)
             {
-                // Xóa các showtimes cũ
-                existingMovie.Showtimes.Clear();
-
-                // Thêm các showtimes mới từ DTO
-                foreach (var showtimeDto in movieDto.Showtimes)
-                {
-                    existingMovie.Showtimes.Add(new Showtime
-                    {
-                        StartTime = showtimeDto.StartTime,  // Use StartTime from showtimeDto
-                        EndTime = showtimeDto.EndTime,      // Use EndTime from showtimeDto
-                        MovieId = existingMovie.Id // Gán MovieId để đảm bảo liên kết đúng
-                    });
-                }
+                return BadRequest(ModelState);
             }
 
-            // Đánh dấu thực thể đã được sửa đổi
-            _context.Entry(existingMovie).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            // Tìm phim trong cơ sở dữ liệu
+            var existingMovie = await _context.Movies.FindAsync(id);
+            if (existingMovie == null)
+            {
+                return NotFound("Không tìm thấy phim với ID được cung cấp.");
+            }
 
-            // Lưu thay đổi
             try
             {
-                _context.SaveChanges();
+                // Cập nhật các trường dữ liệu từ JSON
+                using (var document = JsonDocument.Parse(movieDtoJson.GetRawText()))
+                {
+                    existingMovie.Name = document.RootElement.GetProperty("name").GetString();
+                    existingMovie.Genre = document.RootElement.GetProperty("genre").GetString();
+                    existingMovie.Duration = document.RootElement.GetProperty("duration").GetInt32();
+                    existingMovie.Description = document.RootElement.GetProperty("description").GetString();
+                    existingMovie.Director = document.RootElement.GetProperty("director").GetString();
+                    existingMovie.ImageUrl = document.RootElement.GetProperty("imageUrl").GetString();
+                }
+
+                _context.Entry(existingMovie).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
